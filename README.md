@@ -17,4 +17,4 @@ After the install is done, consider setting your powershell execution policy bac
    `Set-ExecutionPolicy Restricted`
 
 # What are go, ghrel & lovely and why do I need them?
-ghrel is used to grab the latest release of lovely from github without me having to constantly update the link in this script, go is required to install ghrel. Lovely is required for steamodded to function.
+ghrel is used to grab the latest release of lovely from github without me having to constantly update the link in this script, go is required to install ghrel. lovely is required for steamodded to function.
