@@ -241,5 +241,6 @@ if (Test-Path -Path $steamoddedDirectory) {
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nSteamodded did not install correctly. Exiting script."
+    Start-Sleep
     Exit
 }
