@@ -1,14 +1,6 @@
 # Set the title of the PowerShell window
 $Host.UI.RawUI.WindowTitle = "Steamodded EZ Installer"
 
-# Define a function to convert bytes to megabytes
-function Convert-BytesToMB {
-    param (
-        [int]$bytes
-    )
-    return [math]::Round($bytes / 1MB, 2)
-}
-
 # Set background color, get console size, and clear the console with background color
 [System.Console]::BackgroundColor = [System.ConsoleColor]::Black
 [System.Console]::ForegroundColor = [System.ConsoleColor]::White
@@ -28,6 +20,14 @@ $lovelyTemp = "$env:USERPROFILE\Downloads\lovelyTemp"
 $lovelyDLL = "$lovelyTemp\version.dll"
 $steamoddedURL = "https://github.com/Steamopollys/Steamodded/archive/refs/heads/main.zip"
 $modsDirectory = Join-Path -Path $env:APPDATA -ChildPath "Balatro\Mods"
+
+# Define a function to convert bytes to megabytes
+function Convert-BytesToMB {
+    param (
+        [int]$bytes
+    )
+    return [math]::Round($bytes / 1MB, 2)
+}
 
 # Function to download a file with progress reporting
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -140,8 +140,9 @@ if (-Not (Is-GoInstalled)) {
         Remove-Item -Path "$env:USERPROFILE\Downloads\go1.23.2.windows-amd64.msi" -Recurse -Force
     } else {
         [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
-        Write-Host "`nGo installation failed. Please check the installer or your system settings."
+        Write-Host "`nGo installation failed. Try again or install Go manually."
         [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+        Start-Sleep
         Exit
     }
     
@@ -149,7 +150,7 @@ if (-Not (Is-GoInstalled)) {
 } else {
     $isGoInstalled = $true
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-    Write-Host "`nGo is already installed on your system. Continuing..."
+    Write-Host "`nGo is already installed. Continuing..."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
@@ -174,7 +175,7 @@ if ($zipNameLines.Length -ge 3) {
     $zipNameMac2 = "$($zipNameLines[1])"
     $zipNameWin = "$($zipNameLines[2])"
 } else {
-    Write-Host "Not enough lines in temp.txt to create zip names."
+    Write-Host "Error creating zip names."
 }
 
 #download lovely
@@ -198,6 +199,7 @@ if (Test-Path -Path $versionDllPath) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nLovely did not install correctly. Exiting script."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Start-Sleep
     Exit
 }
 
