@@ -137,11 +137,6 @@ if ($zipNameLines.Length -ge 3) {
     $zipNameMac1 = "$($zipNameLines[0])"
     $zipNameMac2 = "$($zipNameLines[1])"
     $zipNameWin = "$($zipNameLines[2])"
-
-    # Output the results (optional)
-    Write-Host "`nMac1 Zip Name: $zipNameMac1"
-    Write-Host "Mac2 Zip Name: $zipNameMac2"
-    Write-Host "Windows Zip Name: $zipNameWin"
 } else {
     Write-Host "Not enough lines in temp.txt to create zip names."
 }
