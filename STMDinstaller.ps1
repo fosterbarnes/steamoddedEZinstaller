@@ -151,9 +151,20 @@ ghrel ethangreen-dev/lovely-injector
 
 #copy lovely to balatro folder
 Copy-Item -Path $lovelyDLL -Destination $balatroPath -Force
-[System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-Write-Host "`nLovely injector installed. Continuing..."
-[System.Console]::ForegroundColor = [System.ConsoleColor]::White
+
+# Check if version.dll exists in the Balatro path
+$versionDllPath = Join-Path -Path $balatroPath -ChildPath "version.dll"
+if (Test-Path -Path $versionDllPath) {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "`nLovely injector installed. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "`nLovely did not install correctly. Exiting script."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Exit
+}
+
 
 #clean up
 Remove-Item -Path $tempGhrel -Force
@@ -186,3 +197,18 @@ Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main" -Recurse -Force
 [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
 Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
 [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+
+# Define the path for the Steamodded directory within Mods
+$steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
+
+# Check if the Steamodded directory exists
+if (Test-Path -Path $steamoddedDirectory) {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
+    [System.Console]::ForegroundColor = [System.Console]::White
+} else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "`nSteamodded did not install correctly. Exiting script."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Exit
+}
