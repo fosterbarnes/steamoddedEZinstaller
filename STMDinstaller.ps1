@@ -73,8 +73,44 @@ function Is-GoInstalled {
     return $false
 }
 
+Write-Host "                                 (######.                     "
+Write-Host "                             */((///////((*                   "
+Write-Host "                           ,#//////////////#*                 "
+Write-Host "                         #///////////(#     ,#                "
+Write-Host "                       *#////////////(#     ,#                "
+Write-Host "                      //(/////////////(#(//,.                 "
+Write-Host "          .........  .((///////////////(,. .........          "
+Write-Host "       (##*********###//////////////////(##*********(##       "
+Write-Host "      #**************/////////////////////*************#*     "
+Write-Host "    /#***************/////////////////////**************/#    "
+Write-Host "   #/******(#******////////////////////////******/#*******#,  "
+Write-Host "   #/***/#    (#/*///////////////////////////*##    /(****#,  "
+Write-Host " .**,.****    (#/*/////*,,,.       ,,,,//////*##    ,***,.**, "
+Write-Host " ,#     ,#    (#(/////                  */////##    /(     /( "
+Write-Host "   #,  (/    #/////********,       ********/////#*   .#   #,  "
+Write-Host "             #////..,* *## .*    ,, ### ,,  .///#*            "
+Write-Host "             ,((//... .....        .....    ./((,.            "
+Write-Host "             ./(,....       ,    ..           ((.             "
+Write-Host "             #,....//////            ,/////     #*            "
+Write-Host "              (#*.. .////////////////////*    ##              "
+Write-Host "                ..(.. ////*,       *////.  /*.                "
+Write-Host "                  /*,. ,*////////////**   ,/,                 "
+Write-Host "              (####......  .//////*       .######*            "
+Write-Host "       (##(((((((((,,,....          ....,,,,,,(((((,(##       "
+Write-Host "   #(((((((*,,,,,,,.  ,,,((((,,, ,*((*,,,,,,,,  ,,,,/(((/,#,  "
+Write-Host " ,#((((///,,,,,,,..,**((((/*,,,,,..,//((/*,,,,,,,,..,,,//((#( "
+Write-Host "#(((((,,,,,,,,. ,,,((((((,,,,,,,,,, ,,,((((,,,,,,,,,..,,,,(((#"
+Write-Host "#((((((((/,,,.,,,,(((((*,///(((((//*,,,*/(((/,,,,,,,*/((((///#"
+Write-Host "#((((((((((*.,,,/(((((,/(((((((((((((/,,/(((((,,,,*((((((((**("
+Write-Host " ,#(((((###, #((((((/,(((((((####(((((((**((((((#* ###((((#,  "
+Write-Host "#(////#      #((((((((((((#/      .#((((((((((((#*     #####( "
+Write-Host ".*((((.      #(((((((((((#,.       .##((((((((((#*     .*##*. "
+Write-Host "             /((((((((((/            ,/(((((((((/,            "
+Write-Host "             #####((##                  /##((///#*            "
+Write-Host "             #######/                     #/////#*            "
+
 #ask user for balatro game folder
-Write-Host "(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
+Write-Host "`n(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
 $balatroPath = Read-Host 
 
 # Check if Go is installed
