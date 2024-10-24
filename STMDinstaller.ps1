@@ -194,10 +194,6 @@ Copy-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main\Steamodded" -Destina
 Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main.zip" -Recurse -Force
 Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main" -Recurse -Force
 
-[System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
-[System.Console]::ForegroundColor = [System.ConsoleColor]::White
-
 # Define the path for the Steamodded directory within Mods
 $steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
 
@@ -209,6 +205,6 @@ if (Test-Path -Path $steamoddedDirectory) {
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nSteamodded did not install correctly. Exiting script."
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    [System.Console]::ForegroundColor = [System.Console]::White
     Exit
 }
