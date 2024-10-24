@@ -101,6 +101,7 @@ if (-Not (Is-GoInstalled)) {
         [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
         Write-Host "`nGo installation complete. Continuing..."
         [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+        Remove-Item -Path "$env:USERPROFILE\Downloads\go1.23.2.windows-amd64.msi" -Recurse -Force
     } else {
         [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
         Write-Host "`nGo installation failed. Please check the installer or your system settings."
@@ -186,7 +187,6 @@ if (-Not (Test-Path -Path $modsDirectory)) {
 Copy-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main\Steamodded" -Destination $modsDirectory -Recurse -Force
 Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main.zip" -Recurse -Force
 Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main" -Recurse -Force
-Remove-Item -Path "$env:USERPROFILE\Downloads\go1.23.2.windows-amd64.msi" -Recurse -Force
 
 [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
 Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
