@@ -30,7 +30,7 @@ $steamoddedURL = "https://github.com/Steamopollys/Steamodded/archive/refs/heads/
 $modsDirectory = Join-Path -Path $env:APPDATA -ChildPath "Balatro\Mods"
 
 # Function to download a file with progress reporting
-# Function to download a file with progress reporting
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Download-FileWithProgress {
     param (
         [string]$url,
@@ -164,7 +164,6 @@ if (Test-Path -Path $versionDllPath) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
     Exit
 }
-
 
 #clean up
 Remove-Item -Path $tempGhrel -Force
