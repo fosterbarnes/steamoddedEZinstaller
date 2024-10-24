@@ -144,7 +144,7 @@ if ($zipNameLines.Length -ge 3) {
 #download lovely
 Write-Host "`nDownloading lovely injector..."
 cd "$env:USERPROFILE\Downloads\"
-ghrel ethangreen-dev/lovely-injector
+ghrel ethangreen-dev/lovely-injector *> $null
 
 #unzip lovely
 [System.IO.Compression.ZipFile]::ExtractToDirectory("$env:USERPROFILE\Downloads\$zipNameWin", "$lovelyTemp")
@@ -200,10 +200,8 @@ $steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
 if (Test-Path -Path $steamoddedDirectory) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
-    [System.Console]::ForegroundColor = [System.Console]::White
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nSteamodded did not install correctly. Exiting script."
-    [System.Console]::ForegroundColor = [System.Console]::White
     Exit
 }
