@@ -207,9 +207,11 @@ if (-Not (Test-Path -Path $modsDirectory)) {
     Write-Host "Mods folder created at $modsDirectory."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 } else {
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Mods directory already exists at $modsDirectory."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Remove-Item -Path "$modsDirectory\Steamodded" -Recurse -Force *> $null
+    Remove-Item -Path "$modsDirectory\Steamodded-main" -Recurse -Force *> $null
 }
 
 #install steamodded
