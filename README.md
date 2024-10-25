@@ -10,11 +10,8 @@ Easy window installer for steamodded alpha (https://github.com/Steamopollys/Stea
    
    `iex (irm https://is.gd/steamodEZinstaller)`
 5. Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path into Powershell and press enter
-6. Follow the on screen instructions to install [go](https://go.dev/doc/install), [ghrel](https://github.com/jreisinger/ghrel), [lovely](https://github.com/jreisinger/ghrel), then finally [steamodded](https://github.com/Steamopollys/Steamodded?tab=readme-ov-file). The whole process should just take a couple minutes.
+6. Wait for script to run and complete. That's it!
 
 After the install is done, consider setting your powershell execution policy back to restricted:
 
    `Set-ExecutionPolicy Restricted`
-
-# What are go, ghrel & lovely and why do I need them?
-ghrel is used to grab the latest release of lovely from github without me having to constantly update the link in this script, go is required to install ghrel. lovely is required for steamodded to function.
