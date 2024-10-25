@@ -11,15 +11,21 @@ for ($i = 0; $i -lt $height; $i++) {
 }
 
 # Define variables
-$installerPath = "$env:USERPROFILE\Downloads\go1.23.2.windows-amd64.msi"
-$goUrl = "https://go.dev/dl/go1.23.2.windows-amd64.msi"
-$tempGhrel = "$env:USERPROFILE\Downloads\tempGhrel.txt"
-$isGoInstalled = $false
-$GOexe = "C:\Program Files\Go\bin\go.exe"
-$lovelyTemp = "$env:USERPROFILE\Downloads\lovelyTemp"
+$lovelyReleaseUrl = "https://api.github.com/repos/ethangreen-dev/lovely-injector/releases/latest"
+$tempDirectory = "$env:TEMP\balaTemp"
+$lovelyTemp = "$tempDirectory\lovelyTemp"
 $lovelyDLL = "$lovelyTemp\version.dll"
+$lovelyReleaseRequest = Invoke-RestMethod -Uri $lovelyReleaseUrl -Headers $headers
 $steamoddedURL = "https://github.com/Steamopollys/Steamodded/archive/refs/heads/main.zip"
 $modsDirectory = Join-Path -Path $env:APPDATA -ChildPath "Balatro\Mods"
+$headers = @{
+    "User-Agent" = "PowerShell"
+}
+$zipNameMac1 = ""
+$zipNameMac2 = ""
+$zipNameWin = ""
+$counter = 1
+
 
 # Define a function to convert bytes to megabytes
 function Convert-BytesToMB {
@@ -47,31 +53,11 @@ function Download-FileWithProgress {
     $mbWritten = Convert-BytesToMB -bytes $bytesWritten
 
     # Output a customized download complete message
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Download complete: $fileDescription - $mbWritten MB"
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
-# Function to check if Go is installed via PATH or specific locations
-function Is-GoInstalled {
-    # Check if 'go' command is available in the PATH
-    $goCmd = Get-Command go -ErrorAction SilentlyContinue
-    if ($goCmd) {
-        return $true
-    }
-
-    # Check if Go is installed in the registry (standard Go installation location)
-    $goRegistryPath = "HKLM:\SOFTWARE\GoProgrammingLanguage"
-    if (Test-Path $goRegistryPath) {
-        return $true
-    }
-
-    # Check if Go executable exists at the standard installation location
-    $goExePath = "C:\Program Files\Go\bin\go.exe"
-    if (Test-Path $goExePath) {
-        return $true
-    }
-
-    return $false
-}
 
 Write-Host "                                 (######.                     "
 Write-Host "                             */((///////((*                   "
@@ -113,130 +99,114 @@ Write-Host "             #######/                     #/////#*            "
 Write-Host "`n(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
 $balatroPath = Read-Host 
 
-# Check if Go is installed
-if (-Not (Is-GoInstalled)) {
-    $isGoInstalled = $false
-    Write-Host "`nGo is not installed. Running the installation process...`n"
-
-    # Check if the Go installer already exists, download if it doesn't
-    if (-Not (Test-Path -Path $installerPath)) {
-        Write-Host "Downloading Go 1.23.2..."
-        Download-FileWithProgress -url $goUrl -outputPath $installerPath -fileDescription "go1.23.2.windows-amd64.msi"
-    } else {
-        Write-Host "Go installer already exists at $installerPath"
-    }
-
-    # Install Go
-    Write-Host "Press any key to run the Go installer..."
-    [void][System.Console]::ReadKey($true)
-    Start-Process "$installerPath" -Wait
-
-    # Check again if Go is installed after running the installer
-    if (Is-GoInstalled) {
-        $isGoInstalled = $true
-        [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-        Write-Host "`nGo installation complete. Continuing..."
-        [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-        Remove-Item -Path "$env:USERPROFILE\Downloads\go1.23.2.windows-amd64.msi" -Recurse -Force
-    } else {
-        [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
-        Write-Host "`nGo installation failed. Try again or install Go manually."
-        [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-        Start-Sleep
-        Exit
-    }
-    
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-} else {
-    $isGoInstalled = $true
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-    Write-Host "`nGo is already installed. Continuing..."
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-}
-
-#install ghrel
-Write-Host "`nInstalling ghrel..."
-& $GOexe install github.com/jreisinger/ghrel@latest
-[System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-Write-Host "ghrel install complete"
-[System.Console]::ForegroundColor = [System.ConsoleColor]::White
-
-#install lovely
-ghrel -l ethangreen-dev/lovely-injector >>$tempGhrel
-$zipName = Get-Content -Path "$tempGhrel" -Raw
-
-# Create an array from the lines in zipName
-$zipNameLines = $zipName -split "`r?`n"  # Split by new lines
-
-# Ensure the array has enough lines to access
-if ($zipNameLines.Length -ge 3) {
-    # Create new variables for different platforms from the respective lines
-    $zipNameMac1 = "$($zipNameLines[0])"
-    $zipNameMac2 = "$($zipNameLines[1])"
-    $zipNameWin = "$($zipNameLines[2])"
-} else {
-    Write-Host "Error creating zip names."
-}
+#create temp directory
+New-Item -Path $tempDirectory -ItemType Directory *> $null
+New-Item -Path $lovelyTemp -ItemType Directory *> $null
 
 #download lovely
-Write-Host "`nDownloading lovely injector..."
-cd "$env:USERPROFILE\Downloads\"
-ghrel ethangreen-dev/lovely-injector *> $null
+Write-Host "`nDownloading Lovely..."
+foreach ($asset in $lovelyReleaseRequest.assets) {
+    $downloadUrl = $asset.browser_download_url
+    $filename = $asset.name
+    $destinationPath = Join-Path -Path $tempDirectory -ChildPath $filename
 
-#unzip lovely
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$env:USERPROFILE\Downloads\$zipNameWin", "$lovelyTemp")
+    #download release assets
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $destinationPath
 
-#copy lovely to balatro folder
-Copy-Item -Path $lovelyDLL -Destination $balatroPath -Force
+    #store filenames in variables
+    switch ($counter) {
+        1 { $zipNameMac1 = $filename }
+        2 { $zipNameMac2 = $filename }
+        3 { $zipNameWin = $filename }
+    }
+    $counter++
+}
 
-# Check if version.dll exists in the Balatro path
-$versionDllPath = Join-Path -Path $balatroPath -ChildPath "version.dll"
-if (Test-Path -Path $versionDllPath) {
+#confirm lovely downloads correctly
+if (Test-Path -Path "$tempDirectory\$winZip") {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-    Write-Host "`nLovely injector installed. Continuing..."
+    Write-Host "Download complete. Continuing..."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
-    Write-Host "`nLovely did not install correctly. Exiting script."
+    Write-Host "Lovely did not download correctly. Try again or install manually."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-    Start-Sleep
+    Pause
+    Exit
+}
+
+#unzip lovely
+Write-Host "`nUnzipping lovely..."
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\$zipNameWin", "$lovelyTemp")
+
+#confirm lovely unzips correctly
+if (Test-Path -Path "$lovelyTemp\version.dll") {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Unzip complete. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "File did not unzip correctly. Try again or install manually."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Pause
+    Exit
+}
+
+#copy lovely to balatro folder
+Write-Host "`nInstalling lovely..."
+Copy-Item -Path $lovelyDLL -Destination $balatroPath -Force
+
+#confirm lovely copies correctly
+$versionDllPath = Join-Path -Path $balatroPath -ChildPath "version.dll"
+if (Test-Path -Path $versionDllPath) {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Lovely injector installed. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "Lovely did not install correctly. Exiting script."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Pause
     Exit
 }
 
 #clean up
-Remove-Item -Path $tempGhrel -Force
-Remove-Item -Path $zipNameMac1 -Force
-Remove-Item -Path $zipNameMac2 -Force
-Remove-Item -Path $zipNameWin -Force
-Remove-Item -Path $lovelyTemp -Recurse -Force
+Remove-Item -Path $tempDirectory -Recurse -Force
+
+#create temp directory
+New-Item -Path $tempDirectory -ItemType Directory *> $null
 
 #download steamodded
 Write-Host "`nDownloading Steamodded..."
-Download-FileWithProgress -url $steamoddedURL -outputPath "$env:USERPROFILE\Downloads\Steamodded-main.zip" -fileDescription "Steamodded-main.zip"
+Download-FileWithProgress -url $steamoddedURL -outputPath "$tempDirectory\Steamodded-main.zip" -fileDescription "Steamodded-main.zip"
 
 #unzip and delete steamodded .zip
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$env:USERPROFILE\Downloads\Steamodded-main.zip", "$env:USERPROFILE\Downloads\Steamodded-main")
-Rename-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main\Steamodded-main" -NewName "$env:USERPROFILE\Downloads\Steamodded-main\Steamodded" -Force
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\Steamodded-main.zip", "$tempDirectory\Steamodded-main")
+Rename-Item -Path "$tempDirectory\Steamodded-main\Steamodded-main" -NewName "$tempDirectory\Steamodded-main\Steamodded" -Force
 
 #create mods folder
+Write-Host "`nCreating mods folder..."
 if (-Not (Test-Path -Path $modsDirectory)) {
-    New-Item -Path $modsDirectory -ItemType Directory -Force
-    Write-Host "`nMods directory created at $modsDirectory."
+    New-Item -Path $modsDirectory -ItemType Directory -Force *> $null
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Mods folder created at $modsDirectory."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 } else {
-    Write-Host "`nMods directory already exists at $modsDirectory."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "Mods directory already exists at $modsDirectory."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
-#copy steamodded to appdata, then delete from downloads
-Copy-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main\Steamodded" -Destination $modsDirectory -Recurse -Force
-Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main.zip" -Recurse -Force
-Remove-Item -Path "$env:USERPROFILE\Downloads\Steamodded-main" -Recurse -Force
+#copy steamodded to appdata, then delete from balatemp
+Copy-Item -Path "$tempDirectory\Steamodded-main\Steamodded" -Destination $modsDirectory -Recurse -Force
+Remove-Item -Path $tempDirectory -Recurse -Force
 
 # Define the path for the Steamodded directory within Mods
 $steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
 
 # Check if the Steamodded directory exists
 if (Test-Path -Path $steamoddedDirectory) {
-    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
     Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
