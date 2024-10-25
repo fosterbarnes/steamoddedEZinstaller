@@ -25,7 +25,7 @@ After the install is done, consider setting your powershell execution policy bac
 ```
 ## Linux (debian/ubuntu/steamOS):
 
-1. Paste one of the following commands into your terminal:
+1. Paste one of the following commands into your terminal and run:
 
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/main/STMDinstaller.sh)
