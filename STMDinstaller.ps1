@@ -136,7 +136,7 @@ if (Test-Path -Path "$tempDirectory\$winZip") {
 }
 
 #unzip lovely
-Write-Host "`nUnzipping lovely..."
+Write-Host "`nUnzipping Lovely..."
 [System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\$zipNameWin", "$lovelyTemp")
 
 #confirm lovely unzips correctly
@@ -153,11 +153,11 @@ if (Test-Path -Path "$lovelyTemp\version.dll") {
 }
 
 #copy lovely to balatro folder
-Write-Host "`nInstalling lovely..."
-Copy-Item -Path $lovelyDLL -Destination $balatroPath -Force
+Write-Host "`nInstalling Lovely..."
+Copy-Item -Path $lovelyDLL -Destination "$balatroPath" -Force
 
 #confirm lovely copies correctly
-$versionDllPath = Join-Path -Path $balatroPath -ChildPath "version.dll"
+$versionDllPath = Join-Path -Path "$balatroPath" -ChildPath "version.dll"
 if (Test-Path -Path $versionDllPath) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Lovely injector installed. Continuing..."
@@ -181,8 +181,23 @@ Write-Host "`nDownloading Steamodded..."
 Download-FileWithProgress -url $steamoddedURL -outputPath "$tempDirectory\Steamodded-main.zip" -fileDescription "Steamodded-main.zip"
 
 #unzip and delete steamodded .zip
+Write-Host "`nUnzipping Steamodded..."
 [System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\Steamodded-main.zip", "$tempDirectory\Steamodded-main")
-Rename-Item -Path "$tempDirectory\Steamodded-main\Steamodded-main" -NewName "$tempDirectory\Steamodded-main\Steamodded" -Force
+
+
+#confirm steamodded unzips correctly
+if (Test-Path -Path "$tempDirectory\Steamodded-main\Steamodded-main\README.md") {
+    Rename-Item -Path "$tempDirectory\Steamodded-main\Steamodded-main" -NewName "$tempDirectory\Steamodded-main\Steamodded" -Force
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Unzip complete. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+    Write-Host "File did not unzip correctly. Try again or install manually."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    Pause
+    Exit
+}
 
 #create mods folder
 Write-Host "`nCreating mods folder..."
@@ -197,17 +212,20 @@ if (-Not (Test-Path -Path $modsDirectory)) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
-#copy steamodded to appdata, then delete from balatemp
+#install steamodded
+Write-Host "`nInstalling Steamodded..."
 Copy-Item -Path "$tempDirectory\Steamodded-main\Steamodded" -Destination $modsDirectory -Recurse -Force
 Remove-Item -Path $tempDirectory -Recurse -Force
 
-# Define the path for the Steamodded directory within Mods
+#define the path for the Steamodded directory
 $steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
 
-# Check if the Steamodded directory exists
+#confirm steamodded was installed correctly
 if (Test-Path -Path $steamoddedDirectory) {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Steamodded installed!"
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-    Write-Host "`nSteamodded installed. Place your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
+    Write-Host "`nPlace your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nSteamodded did not install correctly. Exiting script."
