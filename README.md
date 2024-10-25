@@ -1,6 +1,8 @@
 # steamoddedEZinstaller
 Easy window installer for steamodded alpha (https://github.com/Steamopollys/Steamodded) for use with Balatro mods. this script automatically grabs the latest version of lovely & steamodded, so it should always be up to date.
 
+if Steamodded or Lovely injector are already installed, this script will update them to the latest version(s)
+
 # How to Install
 1. Open Windows Powershell or Powershell 7 as administrator
 2. Copy the following then paste by right clicking the Powershell window. Press enter, A, then enter again
