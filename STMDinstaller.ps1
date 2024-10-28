@@ -25,9 +25,13 @@ $zipNameMac1 = ""
 $zipNameMac2 = ""
 $zipNameWin = ""
 $counter = 1
+$7zipURL = 'https://7-zip.org/' + (Invoke-WebRequest -UseBasicParsing -Uri 'https://7-zip.org/' | Select-Object -ExpandProperty Links | Where-Object {($_.outerHTML -match 'Download')-and ($_.href -like "a/*") -and ($_.href -like "*-x64.exe")} | Select-Object -First 1 | Select-Object -ExpandProperty href)
+$7zipInstallerPath = Join-Path $env:TEMP (Split-Path $7zipURL -Leaf)
+$7ZipPath = "C:\Program Files\7-Zip\7z.exe"
+$7ZipInstalled = Test-Path $7ZipPath
 
 
-# Define a function to convert bytes to megabytes
+#function to convert bytes to megabytes
 function Convert-BytesToMB {
     param (
         [int]$bytes
@@ -35,7 +39,7 @@ function Convert-BytesToMB {
     return [math]::Round($bytes / 1MB, 2)
 }
 
-# Function to download a file with progress reporting
+#function to download a file with progress reporting
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Download-FileWithProgress {
     param (
@@ -103,6 +107,34 @@ $balatroPath = Read-Host
 New-Item -Path $tempDirectory -ItemType Directory *> $null
 New-Item -Path $lovelyTemp -ItemType Directory *> $null
 
+#check if 7zip is installed
+Write-Host "`nChecking if 7-Zip is installed..."
+if (-not $7ZipInstalled) {
+    # Install 7-Zip
+    Write-Host "`7-Zip is not installed. Installing 7-Zip..."
+    Invoke-WebRequest -Uri $7zipURL -OutFile $7zipInstallerPath
+    Start-Process -FilePath $7zipInstallerPath -ArgumentList "/S" -Verb RunAs -Wait
+    Remove-Item $7zipInstallerPath
+
+    # Verify installation after running installer
+    $7ZipInstalled = Test-Path $7ZipPath
+    if ($7ZipInstalled) {
+        [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+        Write-Host "7-Zip has been successfully installed."
+        [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+    }
+    else {
+        Write-Host "7-Zip installation failed. Try again or install manually."
+        Pause
+        exit
+    }
+}
+else {
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "7-Zip is already installed. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+}
+
 #download lovely
 Write-Host "`nDownloading Lovely..."
 foreach ($asset in $lovelyReleaseRequest.assets) {
@@ -137,7 +169,8 @@ if (Test-Path -Path "$tempDirectory\$winZip") {
 
 #unzip lovely
 Write-Host "`nUnzipping Lovely..."
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\$zipNameWin", "$lovelyTemp")
+#[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\$zipNameWin", "$lovelyTemp")
+& "$7ZipPath" x "$tempDirectory\$zipNameWin" -o"$lovelyTemp" -y *> $null
 
 #confirm lovely unzips correctly
 if (Test-Path -Path "$lovelyTemp\version.dll") {
@@ -182,7 +215,8 @@ Download-FileWithProgress -url $steamoddedURL -outputPath "$tempDirectory\Steamo
 
 #unzip and delete steamodded .zip
 Write-Host "`nUnzipping Steamodded..."
-[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\Steamodded-main.zip", "$tempDirectory\Steamodded-main")
+#[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\Steamodded-main.zip", "$tempDirectory\Steamodded-main")
+& "$7ZipPath" x "$tempDirectory\Steamodded-main.zip" -o"$tempDirectory\Steamodded-main" -y *> $null
 
 
 #confirm steamodded unzips correctly
