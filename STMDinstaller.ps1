@@ -120,7 +120,7 @@ if (-not $7ZipInstalled) {
     $7ZipInstalled = Test-Path $7ZipPath
     if ($7ZipInstalled) {
         [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-        Write-Host "7-Zip has been successfully installed."
+        Write-Host "7-Zip installed! Continuing..."
         [System.Console]::ForegroundColor = [System.ConsoleColor]::White
     }
     else {
