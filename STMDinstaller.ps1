@@ -111,7 +111,7 @@ New-Item -Path $lovelyTemp -ItemType Directory *> $null
 Write-Host "`nChecking if 7-Zip is installed..."
 if (-not $7ZipInstalled) {
     # Install 7-Zip
-    Write-Host "`7-Zip is not installed. Installing 7-Zip..."
+    Write-Host "`n7-Zip is not installed. Installing 7-Zip..."
     Invoke-WebRequest -Uri $7zipURL -OutFile $7zipInstallerPath
     Start-Process -FilePath $7zipInstallerPath -ArgumentList "/S" -Verb RunAs -Wait
     Remove-Item $7zipInstallerPath
