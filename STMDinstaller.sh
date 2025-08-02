@@ -67,13 +67,60 @@ curl -L "$steamodded_url" -o "$temp_dir/Steamodded-main.zip" || { echo "Download
 echo "Unzipping Steamodded-main.zip..."
 unzip "$temp_dir/Steamodded-main.zip" -d "$temp_dir" || { echo "Failed to unzip Steamodded"; exit 1; }
 
-# Step 8: Create Mods directory for Balatro
+# Debug: List contents to see actual structure
+echo "Debug: Checking extracted contents..."
+if [ -d "$temp_dir/smods-main" ]; then
+    echo "Found: $temp_dir/smods-main/README.md"
+elif [ -d "$temp_dir/Steamodded-main" ]; then
+    find "$temp_dir/Steamodded-main" -type f -name "*.md" | head -5 | while read file; do
+        echo "Found: $file"
+    done
+else
+    echo "No expected folders found!"
+fi
+
+# Step 8: Handle different folder structures and rename appropriately
+echo "Processing Steamodded folder structure..."
+if [ -f "$temp_dir/smods-main/README.md" ]; then
+    # Direct smods-main structure (actual GitHub structure)
+    mv "$temp_dir/smods-main" "$temp_dir/Steamodded"
+    echo "Found direct smods-main structure, renamed to Steamodded"
+elif [ -f "$temp_dir/Steamodded-main/Steamodded-main/README.md" ]; then
+    # Double nested folder structure (GitHub archive)
+    mv "$temp_dir/Steamodded-main/Steamodded-main" "$temp_dir/Steamodded-main/Steamodded"
+    echo "Found double nested structure, renamed to Steamodded"
+elif [ -f "$temp_dir/Steamodded-main/smods-main/README.md" ]; then
+    # smods-main folder structure within Steamodded-main
+    mv "$temp_dir/Steamodded-main/smods-main" "$temp_dir/Steamodded-main/Steamodded"
+    echo "Found smods-main structure within Steamodded-main, renamed to Steamodded"
+elif [ -f "$temp_dir/Steamodded-main/README.md" ]; then
+    # Single folder structure (direct download)
+    mv "$temp_dir/Steamodded-main" "$temp_dir/Steamodded"
+    echo "Found single folder structure, renamed to Steamodded"
+elif [ -f "$temp_dir/Steamodded-main/Steamodded/README.md" ]; then
+    # Already correctly named structure
+    mv "$temp_dir/Steamodded-main/Steamodded" "$temp_dir/Steamodded"
+    echo "Found already correctly named structure"
+else
+    echo "Error: Expected README.md file not found in any expected location."
+    echo "Please check the extracted contents and try again."
+    exit 1
+fi
+
+# Step 9: Create Mods directory for Balatro
 compatdata_dir="$steam_apps_dir/compatdata/2379780/pfx/drive_c/users/steamuser/AppData/Roaming/Balatro"
 mods_dir="$compatdata_dir/Mods"
 mkdir -p "$mods_dir" || { echo "Failed to create Mods directory"; exit 1; }
 
-# Step 9: Copy unzipped Steamodded folder to Mods directory
-cp -r "$temp_dir/Steamodded-main" "$mods_dir/Steamodded" || { echo "Failed to copy Steamodded folder"; exit 1; }
+# Step 10: Copy unzipped Steamodded folder to Mods directory
+if [ -d "$temp_dir/Steamodded" ]; then
+    cp -r "$temp_dir/Steamodded" "$mods_dir/Steamodded" || { echo "Failed to copy Steamodded folder"; exit 1; }
+elif [ -d "$temp_dir/Steamodded-main/Steamodded" ]; then
+    cp -r "$temp_dir/Steamodded-main/Steamodded" "$mods_dir/Steamodded" || { echo "Failed to copy Steamodded folder"; exit 1; }
+else
+    echo "Error: Steamodded folder not found after processing."
+    exit 1
+fi
 
 # Cleanup
 rm -rf "$temp_dir"
