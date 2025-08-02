@@ -13,11 +13,6 @@ if Steamodded and/or Lovely injector are already installed, this script will upd
 3. Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path into Powershell and press enter
 4. Wait for script to run and complete. That's it!
 
-After the install is done, consider setting your powershell execution policy back to restricted:
-
-```
-   Set-ExecutionPolicy Restricted
-```
 ## Linux (debian/ubuntu/steamOS):
 
 1. Paste one of the following commands into your terminal and run:
