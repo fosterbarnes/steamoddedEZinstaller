@@ -18,6 +18,7 @@ $lovelyDLL = "$lovelyTemp\version.dll"
 $lovelyReleaseRequest = Invoke-RestMethod -Uri $lovelyReleaseUrl -Headers $headers
 $steamoddedURL = "https://github.com/Steamopollys/Steamodded/archive/refs/heads/main.zip"
 $modsDirectory = Join-Path -Path $env:APPDATA -ChildPath "Balatro\Mods"
+$balatroConfigFile = Join-Path -Path $env:TEMP -ChildPath "balatro_config.txt"
 $headers = @{
     "User-Agent" = "PowerShell"
 }
@@ -31,7 +32,7 @@ $7ZipPath = "C:\Program Files\7-Zip\7z.exe"
 $7ZipInstalled = Test-Path $7ZipPath
 
 
-#function to convert bytes to megabytes
+# Function to convert bytes to megabytes
 function Convert-BytesToMB {
     param (
         [int]$bytes
@@ -39,7 +40,7 @@ function Convert-BytesToMB {
     return [math]::Round($bytes / 1MB, 2)
 }
 
-#function to download a file with progress reporting
+# Function to download a file with progress reporting
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Download-FileWithProgress {
     param (
@@ -99,15 +100,34 @@ Write-Host "             /((((((((((/            ,/(((((((((/,            "
 Write-Host "             #####((##                  /##((///#*            "
 Write-Host "             #######/                     #/////#*            "
 
-#ask user for balatro game folder
-Write-Host "`n(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
-$balatroPath = Read-Host 
+# Check if Balatro path is already saved
+$balatroPath = ""
+if (Test-Path -Path $balatroConfigFile) {
+    $savedPath = Get-Content -Path $balatroConfigFile -Raw
+    if ($savedPath -and (Test-Path -Path $savedPath.Trim())) {
+        Write-Host "`nFound Balatro install location: $savedPath"
+        $useSaved = Read-Host "Use this location? (Y/N)"
+        if ($useSaved -eq "Y" -or $useSaved -eq "y") {
+            $balatroPath = $savedPath.Trim()
+        }
+    }
+}
 
-#create temp directory
+# If no saved path or user doesn't want to use it, ask for new path
+if (-not $balatroPath) {
+    Write-Host "`n(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
+    $balatroPath = Read-Host
+    
+    # Save the path for future use
+    $balatroPath | Out-File -FilePath $balatroConfigFile -Encoding UTF8
+    Write-Host "`nBalatro install location saved for future use."
+} 
+
+# Create temp directory
 New-Item -Path $tempDirectory -ItemType Directory *> $null
 New-Item -Path $lovelyTemp -ItemType Directory *> $null
 
-#check if 7zip is installed
+# Check if 7zip is installed
 Write-Host "`nChecking if 7-Zip is installed..."
 if (-not $7ZipInstalled) {
     # Install 7-Zip
@@ -135,17 +155,17 @@ else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
-#download lovely
+# Download lovely
 Write-Host "`nDownloading Lovely..."
 foreach ($asset in $lovelyReleaseRequest.assets) {
     $downloadUrl = $asset.browser_download_url
     $filename = $asset.name
     $destinationPath = Join-Path -Path $tempDirectory -ChildPath $filename
 
-    #download release assets
+    # Download release assets
     Invoke-WebRequest -Uri $downloadUrl -OutFile $destinationPath
 
-    #store filenames in variables
+    # Store filenames in variables
     switch ($counter) {
         1 { $zipNameMac1 = $filename }
         2 { $zipNameMac2 = $filename }
@@ -154,8 +174,8 @@ foreach ($asset in $lovelyReleaseRequest.assets) {
     $counter++
 }
 
-#confirm lovely downloads correctly
-if (Test-Path -Path "$tempDirectory\$winZip") {
+# Confirm lovely downloads correctly
+if (Test-Path -Path "$tempDirectory\$zipNameWin") {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Download complete. Continuing..."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
@@ -167,12 +187,12 @@ if (Test-Path -Path "$tempDirectory\$winZip") {
     Exit
 }
 
-#unzip lovely
+# Unzip lovely
 Write-Host "`nUnzipping Lovely..."
 #[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\$zipNameWin", "$lovelyTemp")
 & "$7ZipPath" x "$tempDirectory\$zipNameWin" -o"$lovelyTemp" -y *> $null
 
-#confirm lovely unzips correctly
+# Confirm lovely unzips correctly
 if (Test-Path -Path "$lovelyTemp\version.dll") {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Unzip complete. Continuing..."
@@ -185,11 +205,11 @@ if (Test-Path -Path "$lovelyTemp\version.dll") {
     Exit
 }
 
-#copy lovely to balatro folder
+# Copy lovely to balatro folder
 Write-Host "`nInstalling Lovely..."
 Copy-Item -Path $lovelyDLL -Destination "$balatroPath" -Force
 
-#confirm lovely copies correctly
+# Confirm lovely copies correctly
 $versionDllPath = Join-Path -Path "$balatroPath" -ChildPath "version.dll"
 if (Test-Path -Path $versionDllPath) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
@@ -203,37 +223,56 @@ if (Test-Path -Path $versionDllPath) {
     Exit
 }
 
-#clean up
+# Clean up
 Remove-Item -Path $tempDirectory -Recurse -Force
 
-#create temp directory
+# Create temp directory
 New-Item -Path $tempDirectory -ItemType Directory *> $null
 
-#download steamodded
+# Download steamodded
 Write-Host "`nDownloading Steamodded..."
 Download-FileWithProgress -url $steamoddedURL -outputPath "$tempDirectory\Steamodded-main.zip" -fileDescription "Steamodded-main.zip"
 
-#unzip and delete steamodded .zip
+# Unzip and delete steamodded .zip
 Write-Host "`nUnzipping Steamodded..."
 #[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDirectory\Steamodded-main.zip", "$tempDirectory\Steamodded-main")
 & "$7ZipPath" x "$tempDirectory\Steamodded-main.zip" -o"$tempDirectory\Steamodded-main" -y *> $null
 
-
-#confirm steamodded unzips correctly
+# Confirm steamodded unzips correctly
 if (Test-Path -Path "$tempDirectory\Steamodded-main\Steamodded-main\README.md") {
+    # Double nested folder structure (GitHub archive)
     Rename-Item -Path "$tempDirectory\Steamodded-main\Steamodded-main" -NewName "$tempDirectory\Steamodded-main\Steamodded" -Force
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Unzip complete. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} elseif (Test-Path -Path "$tempDirectory\Steamodded-main\smods-main\README.md") {
+    # smods-main folder structure (actual GitHub structure)
+    Rename-Item -Path "$tempDirectory\Steamodded-main\smods-main" -NewName "$tempDirectory\Steamodded-main\Steamodded" -Force
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Unzip complete. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} elseif (Test-Path -Path "$tempDirectory\Steamodded-main\README.md") {
+    # Single folder structure (direct download)
+    Rename-Item -Path "$tempDirectory\Steamodded-main" -NewName "$tempDirectory\Steamodded" -Force
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+    Write-Host "Unzip complete. Continuing..."
+    [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+} elseif (Test-Path -Path "$tempDirectory\Steamodded-main\Steamodded\README.md") {
+    # Already correctly named structure
+    Rename-Item -Path "$tempDirectory\Steamodded-main\Steamodded" -NewName "$tempDirectory\Steamodded" -Force
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Unzip complete. Continuing..."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "File did not unzip correctly. Try again or install manually."
+    Write-Host "Expected README.md file not found in any expected location."
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
     Pause
     Exit
 }
 
-#create mods folder
+# Create mods folder
 Write-Host "`nCreating mods folder..."
 if (-Not (Test-Path -Path $modsDirectory)) {
     New-Item -Path $modsDirectory -ItemType Directory -Force *> $null
@@ -248,15 +287,15 @@ if (-Not (Test-Path -Path $modsDirectory)) {
     Remove-Item -Path "$modsDirectory\Steamodded-main" -Recurse -Force *> $null
 }
 
-#install steamodded
+# Install steamodded
 Write-Host "`nInstalling Steamodded..."
 Copy-Item -Path "$tempDirectory\Steamodded-main\Steamodded" -Destination $modsDirectory -Recurse -Force
 Remove-Item -Path $tempDirectory -Recurse -Force
 
-#define the path for the Steamodded directory
+# Define the path for the Steamodded directory
 $steamoddedDirectory = Join-Path -Path $modsDirectory -ChildPath "Steamodded"
 
-#confirm steamodded was installed correctly
+# Confirm steamodded was installed correctly
 if (Test-Path -Path $steamoddedDirectory) {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
     Write-Host "Steamodded installed!"
