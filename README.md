@@ -32,3 +32,12 @@ wget -qO- https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/m
 ```
 WINEDLLOVERRIDES="version=n,b" %command%
 ```
+
+## Support
+If you have any issues, create an issue from the [Issues](https://github.com/fosterbarnes/steamoddedEZinstaller/issues) tab and I will get back to you as quickly as possible.
+
+If you'd like to support me, follow me on twitch:
+https://www.twitch.tv/fosterbarnes
+
+or if you're feeling generous drop a donation:
+https://coff.ee/fosterbarnes
