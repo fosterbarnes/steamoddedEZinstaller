@@ -9,7 +9,7 @@ if Steamodded and/or Lovely injector are already installed, this script will upd
 2. Press enter
 
 ## Windows Slightly Less Easy Mode:
-1. Open Windows Powershell or Powershell 7 as administrator
+1. Open Windows Powershell or Powershell 7
 2. Copy the following then paste by right clicking the Powershell window
    ```
    iex (irm https://is.gd/steamodEZinstaller)
