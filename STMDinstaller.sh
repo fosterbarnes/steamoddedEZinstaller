@@ -81,8 +81,10 @@ fi
 
 # Step 8: Handle different folder structures and rename appropriately
 echo "Processing Steamodded folder structure..."
+echo "Debug: Checking for smods-main/README.md at: $temp_dir/smods-main/README.md"
 if [ -f "$temp_dir/smods-main/README.md" ]; then
     # Direct smods-main structure (actual GitHub structure)
+    echo "Found smods-main/README.md, renaming folder..."
     mv "$temp_dir/smods-main" "$temp_dir/Steamodded"
     echo "Found direct smods-main structure, renamed to Steamodded"
 elif [ -f "$temp_dir/Steamodded-main/Steamodded-main/README.md" ]; then
@@ -113,12 +115,17 @@ mods_dir="$compatdata_dir/Mods"
 mkdir -p "$mods_dir" || { echo "Failed to create Mods directory"; exit 1; }
 
 # Step 10: Copy unzipped Steamodded folder to Mods directory
+echo "Debug: Checking for Steamodded folder after processing..."
 if [ -d "$temp_dir/Steamodded" ]; then
+    echo "Found Steamodded folder at: $temp_dir/Steamodded"
     cp -r "$temp_dir/Steamodded" "$mods_dir/Steamodded" || { echo "Failed to copy Steamodded folder"; exit 1; }
 elif [ -d "$temp_dir/Steamodded-main/Steamodded" ]; then
+    echo "Found Steamodded folder at: $temp_dir/Steamodded-main/Steamodded"
     cp -r "$temp_dir/Steamodded-main/Steamodded" "$mods_dir/Steamodded" || { echo "Failed to copy Steamodded folder"; exit 1; }
 else
     echo "Error: Steamodded folder not found after processing."
+    echo "Available directories in $temp_dir:"
+    ls -la "$temp_dir"
     exit 1
 fi
 
