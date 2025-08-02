@@ -1,5 +1,9 @@
-# Set the title of the PowerShell window
+﻿# Set the title of the PowerShell window
 $Host.UI.RawUI.WindowTitle = "Steamodded EZ Installer"
+
+# Set console window size
+$Host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.Size(120, 41)
+$Host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(120, 1000)
 
 # Set background color, get console size, and clear the console with background color
 [System.Console]::BackgroundColor = [System.ConsoleColor]::Black
@@ -18,7 +22,6 @@ $lovelyDLL = "$lovelyTemp\version.dll"
 $lovelyReleaseRequest = Invoke-RestMethod -Uri $lovelyReleaseUrl -Headers $headers
 $steamoddedURL = "https://github.com/Steamopollys/Steamodded/archive/refs/heads/main.zip"
 $modsDirectory = Join-Path -Path $env:APPDATA -ChildPath "Balatro\Mods"
-$balatroConfigFile = Join-Path -Path $env:TEMP -ChildPath "balatro_config.txt"
 $headers = @{
     "User-Agent" = "PowerShell"
 }
@@ -63,6 +66,92 @@ function Download-FileWithProgress {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
 }
 
+# Function to automatically find Balatro install path using Steam registry
+function Find-BalatroInstallPath {
+    Write-Host "`nSearching for Balatro installation..."
+    
+    # Method 1: Check common Steam locations first
+    $commonPaths = @(
+        "C:\Program Files (x86)\Steam\steamapps\common\Balatro",
+        "C:\Program Files\Steam\steamapps\common\Balatro"
+    )
+    
+         foreach ($path in $commonPaths) {
+         if (Test-Path $path) {
+             [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+             Write-Host "Found Balatro at: $path"
+             [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+             return $path
+         }
+     }
+    
+    # Method 2: Query Steam registry and search all library locations
+    Write-Host "Checking Steam registry for additional library locations..."
+    
+    # Try to get Steam install path from registry
+    $steamPath = $null
+    try {
+        $steamPath = (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Valve\Steam" -Name "InstallPath" -ErrorAction Stop).InstallPath
+    } catch {
+        try {
+            $steamPath = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Valve\Steam" -Name "InstallPath" -ErrorAction Stop).InstallPath
+        } catch {
+            Write-Host "Could not find Steam installation in registry."
+            return $null
+        }
+    }
+    
+    if (-not $steamPath -or -not (Test-Path $steamPath)) {
+        Write-Host "Steam installation not found or invalid path."
+        return $null
+    }
+    
+         # Check the main Steam library first
+     $mainLibraryPath = "$steamPath\steamapps\common\Balatro"
+           if (Test-Path $mainLibraryPath) {
+          [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+          Write-Host "Found Balatro at: $mainLibraryPath"
+          [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+          return $mainLibraryPath
+      }
+    
+    # Parse libraryfolders.vdf to find additional Steam libraries
+    $libraryFoldersPath = Join-Path $steamPath "steamapps\libraryfolders.vdf"
+    if (Test-Path $libraryFoldersPath) {
+        try {
+            $libraryFoldersContent = Get-Content $libraryFoldersPath -Raw
+            $libraryPaths = @()
+            
+            # Extract library paths from libraryfolders.vdf
+            $lines = $libraryFoldersContent -split "`n"
+            foreach ($line in $lines) {
+                if ($line -match '"path"\s+"([^"]+)"') {
+                    $libraryPath = $matches[1]
+                    # Normalize the path by replacing double backslashes with single backslashes
+                    $libraryPath = $libraryPath -replace '\\\\', '\'
+                    $libraryPaths += $libraryPath
+                }
+            }
+            
+                         # Search for Balatro in each library
+                           foreach ($libraryPath in $libraryPaths) {
+                  $balatroPath = "$libraryPath\steamapps\common\Balatro"
+                  if (Test-Path $balatroPath) {
+                      [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+                      Write-Host "Found Balatro at: $balatroPath"
+                      [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+                      return $balatroPath
+                  }
+              }
+        } catch {
+            Write-Host "Error parsing Steam library folders file."
+        }
+    }
+    
+    Write-Host "Balatro installation not found in any Steam library."
+    return $null
+}
+
 
 Write-Host "                                 (######.                     "
 Write-Host "                             */((///////((*                   "
@@ -100,27 +189,29 @@ Write-Host "             /((((((((((/            ,/(((((((((/,            "
 Write-Host "             #####((##                  /##((///#*            "
 Write-Host "             #######/                     #/////#*            "
 
-# Check if Balatro path is already saved
-$balatroPath = ""
-if (Test-Path -Path $balatroConfigFile) {
-    $savedPath = Get-Content -Path $balatroConfigFile -Raw
-    if ($savedPath -and (Test-Path -Path $savedPath.Trim())) {
-        Write-Host "`nFound Balatro install location: $savedPath"
-        $useSaved = Read-Host "Use this location? (Y/N)"
-        if ($useSaved -eq "Y" -or $useSaved -eq "y") {
-            $balatroPath = $savedPath.Trim()
-        }
+# Try auto-detection first
+$balatroPath = Find-BalatroInstallPath
+
+if ($balatroPath) {
+    $useAutoDetected = Read-Host "`nUse this automatically detected location? (Y/N)"
+    if ($useAutoDetected -eq "N" -or $useAutoDetected -eq "n") {
+        $balatroPath = ""
     }
 }
 
-# If no saved path or user doesn't want to use it, ask for new path
+# If auto-detection failed or user declined, ask for manual input
 if (-not $balatroPath) {
     Write-Host "`n(Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path) `n`nEnter your Balatro install location:"
     $balatroPath = Read-Host
     
-    # Save the path for future use
-    $balatroPath | Out-File -FilePath $balatroConfigFile -Encoding UTF8
-    Write-Host "`nBalatro install location saved for future use."
+    # Validate the path
+    if (-not (Test-Path $balatroPath)) {
+        [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
+        Write-Host "Error: The specified path does not exist. Please check the path and try again."
+        [System.Console]::ForegroundColor = [System.ConsoleColor]::White
+        Pause
+        Exit
+    }
 } 
 
 # Create temp directory
@@ -301,6 +392,10 @@ if (Test-Path -Path $steamoddedDirectory) {
     Write-Host "Steamodded installed!"
     [System.Console]::ForegroundColor = [System.ConsoleColor]::White
     Write-Host "`nPlace your mods into %AppData%/Balatro/Mods and launch the game. Have fun!"
+    Write-Host "`nPress any key to open mods folder..."
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    Start-Process "explorer.exe" -ArgumentList $modsDirectory
+    Exit
 } else {
     [System.Console]::ForegroundColor = [System.ConsoleColor]::DarkRed
     Write-Host "`nSteamodded did not install correctly. Exiting script."

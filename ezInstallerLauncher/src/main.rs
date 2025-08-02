@@ -2,12 +2,17 @@ use std::process::Command;
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    // Set the console window title (Windows will use the embedded icon automatically)
+    // Set the console window title and size (Windows will use the embedded icon automatically)
     #[cfg(windows)]
     {
         // Set the window title using a simple approach
         let _ = std::process::Command::new("title")
             .arg("Steamodded EZ Installer")
+            .output();
+        
+        // Set console window size using mode command
+        let _ = std::process::Command::new("mode")
+            .args(&["con:", "cols=120", "lines=41"])
             .output();
     }
 
