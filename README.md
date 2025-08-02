@@ -4,13 +4,17 @@ Easy window installer for steamodded alpha (https://github.com/Steamopollys/Stea
 if Steamodded and/or Lovely injector are already installed, this script will update them to the latest version(s)
 
 # How to Install
-## Windows:
+## Windows Easy Mode:
+1. Download and run [STMDinstaller.exe](https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/main/STMDinstaller.exe)
+2. Press enter
+
+## Windows Slightly Less Easy Mode:
 1. Open Windows Powershell or Powershell 7 as administrator
-2. Copy the following then paste by right clicking the Powershell window. Press 'a', 'enter', then 'enter' again
+2. Copy the following then paste by right clicking the Powershell window
    ```
    iex (irm https://is.gd/steamodEZinstaller)
    ```
-3. Open steam, right click Balatro. Select Manage > Browse local files. Copy & paste this path into Powershell and press enter
+3. Press enter
 4. Wait for script to run and complete. That's it!
 
 ## Linux (debian/ubuntu/steamOS):
