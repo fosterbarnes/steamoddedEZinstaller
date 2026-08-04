@@ -1,20 +1,20 @@
 # steamoddedEZinstaller
-Easy window installer for steamodded alpha (https://github.com/Steamopollys/Steamodded) for use with Balatro mods. this script automatically grabs the latest version of Lovely injector & Steamodded, so it should always be up to date.
+Easy installer for [Steamodded/smods](https://github.com/Steamodded/smods) for use with Balatro mods. The installer automatically grabs the latest version of Lovely Injector and Steamodded, so it should stay up to date.
 
-if Steamodded and/or Lovely injector are already installed, this script will update them to the latest version(s). 
+If Steamodded and/or Lovely Injector are already installed, this script updates them to the latest versions.
 
 The Windows script is written in Powershell, Linux script is written in bash, and the .exe launcher is written in Rust.
 
 # How to Install
 ## Windows Easy Mode:
-1. Download and run [STMDinstaller.exe](https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/main/STMDinstaller.exe)
+1. Download and run [STMDinstaller.exe](https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/refs/heads/main/STMDinstaller.exe)
 2. Press enter
 
 ## Windows Slightly Less Easy Mode:
 1. Open Windows Powershell or Powershell 7
 2. Copy the following then paste by right clicking the Powershell window
    ```
-   iex (irm https://is.gd/steamodEZinstaller)
+   iex (irm https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/refs/heads/main/STMDinstaller.ps1)
    ```
 3. Press enter
 4. Wait for script to run and complete. That's it!
@@ -24,10 +24,10 @@ The Windows script is written in Powershell, Linux script is written in bash, an
 1. Paste one of the following commands into your terminal and run:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/main/STMDinstaller.sh)
+bash <(curl -s https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/refs/heads/main/STMDinstaller.sh)
 ```
 ```bash
-wget -qO- https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/main/STMDinstaller.sh | bash
+wget -qO- https://raw.githubusercontent.com/fosterbarnes/steamoddedEZinstaller/refs/heads/main/STMDinstaller.sh | bash
 ```
 2. Open Steam. Right-click balatro and select "Properties"
 3. Paste the following in the "Launch Options" field
